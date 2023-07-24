@@ -99,7 +99,7 @@ M.extend_default_hl = function(highlights)
   end
 
   -- transparency
-  if vim.g.transparency then
+  if M.opts.transparency then
     local glassy = require "base46.glassy"
 
     for key, value in pairs(glassy) do
@@ -187,6 +187,15 @@ M.compile = function()
     end
   end
 end
+
+M.load_all_highlights_without_compile = function()
+  require("plenary.reload").reload_module "base46"
+
+  for _, file in ipairs(vim.fn.readdir(M.opts.base46_cache)) do
+    dofile(M.opts.base46_cache .. file)
+  end
+end
+
 
 M.load_all_highlights = function()
   require("plenary.reload").reload_module "base46"
