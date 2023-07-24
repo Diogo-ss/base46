@@ -43,7 +43,7 @@ local item_kinds = {
   CmpItemKindCopilot = { fg = colors.green },
 }
 
-local cmp_ui = require("core.utils").load_config().ui.cmp
+local cmp_ui = require("base46").opts.cmp
 
 -- custom highlights per style!
 local styles = {

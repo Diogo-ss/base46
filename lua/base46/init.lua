@@ -1,11 +1,53 @@
 local M = {}
 local g = vim.g
-local config = require("core.utils").load_config()
 local base46_path = vim.fn.fnamemodify(debug.getinfo(1, "S").source:sub(2), ":p:h")
 
+M.opts = {
+  ------------------------------- base46 -------------------------------------
+  base46_cache = vim.fn.stdpath("data") .. "/base46/",
+  nvchad_theme = "catppuccin",
+
+  -- hl = highlights
+  hl_add = {},
+  hl_override = {},
+  changed_themes = {},
+  -- theme_toggle = { "onedark", "one_light" },
+  -- theme = "onedark", -- default theme
+  transparency = false,
+  lsp_semantic_tokens = false, -- needs nvim v0.9, just adds highlight groups for lsp semantic tokens
+
+  -- https://github.com/NvChad/base46/tree/v2.0/lua/base46/extended_integrations
+  extended_integrations = {}, -- these aren't compiled by default, ex: "alpha", "notify"
+
+  -- cmp themeing
+  cmp = {
+    icons = true,
+    lspkind_text = true,
+    style = "default", -- default/flat_light/flat_dark/atom/atom_colored
+    border_color = "grey_fg", -- only applicable for "default" style, use color names from base30 variables
+    selected_item_bg = "colored", -- colored / simple
+  },
+
+  telescope = { style = "borderless" }, -- borderless / bordered
+
+  statusline = {
+    theme = "default", -- default/vscode/vscode_colored/minimal
+    -- default/round/block/arrow separators work only for default statusline theme
+    -- round and block will work for minimal theme only
+    separator_style = "default",
+    overriden_modules = nil,
+  },
+
+  cheatsheet = { theme = "grid" },
+}
+
+M.setup = function(options)
+  M.opts = vim.tbl_deep_extend("force", M.opts, options or {})
+end
+
 M.get_theme_tb = function(type)
-  local default_path = "base46.themes." .. g.nvchad_theme
-  local user_path = "custom.themes." .. g.nvchad_theme
+  local default_path = "base46.themes." .. M.opts.nvchad_theme
+  local user_path = "custom.themes." .. M.opts.nvchad_theme
 
   local present1, default_theme = pcall(require, default_path)
   local present2, user_theme = pcall(require, user_path)
@@ -67,8 +109,8 @@ M.extend_default_hl = function(highlights)
     end
   end
 
-  if config.ui.hl_override then
-    local overriden_hl = M.turn_str_to_color(config.ui.hl_override)
+  if M.opts.hl_override then
+    local overriden_hl = M.turn_str_to_color(M.opts.hl_override)
 
     for key, value in pairs(overriden_hl) do
       if highlights[key] then
@@ -112,7 +154,7 @@ M.saveStr_to_cache = function(filename, tb)
   local defaults_cond = filename == "defaults" and bg_opt or ""
 
   local lines = "return string.dump(function()" .. defaults_cond .. M.table_to_str(tb) .. "end, true)"
-  local file = io.open(vim.g.base46_cache .. filename, "wb")
+  local file = io.open(M.opts.base46_cache .. filename, "wb")
 
   if file then
     file:write(loadstring(lines)())
@@ -121,8 +163,8 @@ M.saveStr_to_cache = function(filename, tb)
 end
 
 M.compile = function()
-  if not vim.loop.fs_stat(vim.g.base46_cache) then
-    vim.fn.mkdir(vim.g.base46_cache, "p")
+  if not vim.loop.fs_stat(M.opts.base46_cache) then
+    vim.fn.mkdir(M.opts.base46_cache, "p")
   end
 
   -- All integration modules, each file returns a table
@@ -137,7 +179,7 @@ M.compile = function()
   end
 
   -- look for custom cached highlight files
-  local extended_integrations = config.ui.extended_integrations
+  local extended_integrations = M.opts.extended_integrations
 
   if extended_integrations then
     for _, integration in ipairs(extended_integrations) do
@@ -150,45 +192,45 @@ M.load_all_highlights = function()
   require("plenary.reload").reload_module "base46"
   M.compile()
 
-  for _, file in ipairs(vim.fn.readdir(vim.g.base46_cache)) do
-    dofile(vim.g.base46_cache .. file)
+  for _, file in ipairs(vim.fn.readdir(M.opts.base46_cache)) do
+    dofile(M.opts.base46_cache .. file)
   end
 end
 
 M.override_theme = function(default_theme, theme_name)
-  local changed_themes = config.ui.changed_themes
+  local changed_themes = M.opts.changed_themes
   return M.merge_tb(default_theme, changed_themes.all or {}, changed_themes[theme_name] or {})
 end
 
-M.toggle_theme = function()
-  local themes = config.ui.theme_toggle
-  local theme1 = themes[1]
-  local theme2 = themes[2]
+-- M.toggle_theme = function()
+--   local themes = M.opts.theme_toggle
+--   local theme1 = themes[1]
+--   local theme2 = themes[2]
 
-  if g.nvchad_theme ~= theme1 and g.nvchad_theme ~= theme2 then
-    vim.notify "Set your current theme to one of those mentioned in the theme_toggle table (chadrc)"
-    return
-  end
+--   if M.opts.nvchad_theme ~= theme1 and M.opts.nvchad_theme ~= theme2 then
+--     vim.notify "Set your current theme to one of those mentioned in the theme_toggle table (chadrc)"
+--     return
+--   end
 
-  if g.nvchad_theme == theme1 then
-    g.toggle_theme_icon = "   "
-    vim.g.nvchad_theme = theme2
-    require("nvchad").replace_word('theme = "' .. theme1, 'theme = "' .. theme2)
-  else
-    vim.g.nvchad_theme = theme1
-    g.toggle_theme_icon = "   "
-    require("nvchad").replace_word('theme = "' .. theme2, 'theme = "' .. theme1)
-  end
+--   if M.opts.nvchad_theme == theme1 then
+--     g.toggle_theme_icon = "   "
+--     vim.M.opts.nvchad_theme = theme2
+--     require("nvchad").replace_word('theme = "' .. theme1, 'theme = "' .. theme2)
+--   else
+--     vim.M.opts.nvchad_theme = theme1
+--     g.toggle_theme_icon = "   "
+--     require("nvchad").replace_word('theme = "' .. theme2, 'theme = "' .. theme1)
+--   end
 
-  M.load_all_highlights()
-end
+--   M.load_all_highlights()
+-- end
 
 M.toggle_transparency = function()
   g.transparency = not g.transparency
   M.load_all_highlights()
 
   -- write transparency value to chadrc
-  local old_data = "transparency = " .. tostring(config.ui.transparency)
+  local old_data = "transparency = " .. tostring(M.opts.transparency)
   local new_data = "transparency = " .. tostring(g.transparency)
 
   require("nvchad").replace_word(old_data, new_data)

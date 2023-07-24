@@ -17,7 +17,7 @@ local M = {
   },
 }
 
-local cheatsheet_theme = require("core.utils").load_config().ui.cheatsheet.theme
+local cheatsheet_theme = require("base46").opts.cheatsheet.theme
 
 if cheatsheet_theme == "grid" then
   M.NvChAsciiHeader = {
