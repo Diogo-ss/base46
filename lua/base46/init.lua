@@ -5,7 +5,7 @@ local base46_path = vim.fn.fnamemodify(debug.getinfo(1, "S").source:sub(2), ":p:
 M.opts = {
   ------------------------------- base46 -------------------------------------
   base46_cache = vim.fn.stdpath("data") .. "/base46/",
-  nvchad_theme = "catppuccin",
+  nvchad_theme = "onedark",
 
   -- hl = highlights
   hl_add = {},
@@ -243,6 +243,28 @@ M.toggle_transparency = function()
   local new_data = "transparency = " .. tostring(g.transparency)
 
   require("nvchad").replace_word(old_data, new_data)
+end
+
+M.create_color_files = function()
+    local path = debug.getinfo(1, "S").source:sub(2):match("(.*[/\\])"):sub(1, -2)
+    local color_dir = path .. "/../../colors"
+
+    if vim.fn.isdirectory(color_dir) then
+        vim.fn.delete(color_dir, "rf")
+    end
+
+    vim.fn.mkdir(color_dir, "p")
+
+    for _, file in ipairs(vim.fn.readdir(path .. "/themes")) do
+        if vim.fn.isdirectory(path .. "/" .. file) == 0 and not file:match "^%." then
+            local name = file:gsub("%.lua$", "")
+            local color_file = color_dir .. "/" .. "base46_" .. name .. ".lua"
+            local content = string.format( "require \"base46\".setup({ nvchad_theme = \"%s\" })\n\nrequire(\"base46\").load_all_highlights()", name )
+            local f = io.open(color_file, "w")
+            f:write(content)
+            f:close()
+        end
+    end
 end
 
 return M
