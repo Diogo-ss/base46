@@ -5,7 +5,7 @@ local base46_path = vim.fn.fnamemodify(debug.getinfo(1, "S").source:sub(2), ":p:
 M.opts = {
   ------------------------------- base46 -------------------------------------
   base46_cache = vim.fn.stdpath("data") .. "/base46/",
-  nvchad_theme = "onedark",
+  theme = "onedark",
 
   -- hl = highlights
   hl_add = {},
@@ -46,8 +46,8 @@ M.setup = function(options)
 end
 
 M.get_theme_tb = function(type)
-  local default_path = "base46.themes." .. M.opts.nvchad_theme
-  local user_path = "custom.themes." .. M.opts.nvchad_theme
+  local default_path = "base46.themes." .. M.opts.theme
+  local user_path = "custom.themes." .. M.opts.theme
 
   local present1, default_theme = pcall(require, default_path)
   local present2, user_theme = pcall(require, user_path)
@@ -189,7 +189,7 @@ M.compile = function()
 end
 
 M.load_all_highlights_without_compile = function()
-  require("plenary.reload").reload_module "base46"
+  -- require("plenary.reload").reload_module "base46"
 
   for _, file in ipairs(vim.fn.readdir(M.opts.base46_cache)) do
     dofile(M.opts.base46_cache .. file)
@@ -198,7 +198,7 @@ end
 
 
 M.load_all_highlights = function()
-  require("plenary.reload").reload_module "base46"
+  -- require("plenary.reload").reload_module "base46"
   M.compile()
 
   for _, file in ipairs(vim.fn.readdir(M.opts.base46_cache)) do
@@ -216,17 +216,17 @@ end
 --   local theme1 = themes[1]
 --   local theme2 = themes[2]
 
---   if M.opts.nvchad_theme ~= theme1 and M.opts.nvchad_theme ~= theme2 then
+--   if M.opts.theme ~= theme1 and M.opts.theme ~= theme2 then
 --     vim.notify "Set your current theme to one of those mentioned in the theme_toggle table (chadrc)"
 --     return
 --   end
 
---   if M.opts.nvchad_theme == theme1 then
+--   if M.opts.theme == theme1 then
 --     g.toggle_theme_icon = "   "
---     vim.M.opts.nvchad_theme = theme2
+--     vim.M.opts.theme = theme2
 --     require("nvchad").replace_word('theme = "' .. theme1, 'theme = "' .. theme2)
 --   else
---     vim.M.opts.nvchad_theme = theme1
+--     vim.M.opts.theme = theme1
 --     g.toggle_theme_icon = "   "
 --     require("nvchad").replace_word('theme = "' .. theme2, 'theme = "' .. theme1)
 --   end
@@ -259,7 +259,7 @@ M.create_color_files = function()
         if vim.fn.isdirectory(path .. "/" .. file) == 0 and not file:match "^%." then
             local name = file:gsub("%.lua$", "")
             local color_file = color_dir .. "/" .. "base46_" .. name .. ".lua"
-            local content = string.format( "require \"base46\".setup({ nvchad_theme = \"%s\" })\n\nrequire(\"base46\").load_all_highlights()", name )
+            local content = string.format( "require \"base46\".setup({ theme = \"%s\" })\n\nrequire(\"base46\").load_all_highlights()", name )
             local f = io.open(color_file, "w")
             f:write(content)
             f:close()

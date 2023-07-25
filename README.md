@@ -1,5 +1,31 @@
 ## NvChad theme plugin
 
+```lua
+{
+  "Diogo-ss/base46",
+  lazy = false,
+  init = function()
+    require "base46".setup( { theme = "onedark" } )
+    require "base46".load_all_highlights()
+  end
+}
+```
+
+or
+
+```lua
+{
+  "Diogo-ss/base46",
+  lazy = false,
+  biuld = function()
+    require "base46".create_color_files()
+  end,
+  init = function()
+    vim.cmd "colorscheme base46_onedark"
+  end
+}
+```
+
 - This plugin's a whole re-write of Norcalli's plugin.
  
 (Note: This theme plugin is supposed to be used along with [NvChad](https://github.com/NvChad/NvChad) only so watchout!)
